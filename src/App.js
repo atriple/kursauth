@@ -7,6 +7,7 @@ import {
   VStack,
   Code,
   Grid,
+  Select,
   theme,
 } from '@chakra-ui/react';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
@@ -24,7 +25,7 @@ function App() {
               Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
             </Text>
             <Link
-              color="teal.500"
+              color="red.500"
               href="https://chakra-ui.com"
               fontSize="2xl"
               target="_blank"
@@ -33,10 +34,10 @@ function App() {
               Aplikasi Kurs
             </Link>
             <Select placeholder="Select option">
-  <option value="option1">Option 1</option>
-  <option value="option2">Option 2</option>
-  <option value="option3">Option 3</option>
-</Select>
+            <option value="option1">USD</option>
+            <option value="option2">AUD</option>
+            <option value="option3">SGD</option>
+            </Select>
           </VStack>
         </Grid>
       </Box>

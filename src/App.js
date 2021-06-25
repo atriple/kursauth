@@ -1,47 +1,50 @@
 import React from 'react';
 import {
   ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
   Code,
-  Grid,
+  Text,
+  Flex,
+  Box,
+  Spacer,
+  Button,
   theme,
 } from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Kurs from './Kurs';
+import Registration from './Registration';
+import LogIn from './LogIn';
 import { Logo } from './Logo';
 
-function App() {
+export default function App() {
   return (
     <ChakraProvider theme={theme}>
-      <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
-          <ColorModeSwitcher justifySelf="flex-end" />
-          <VStack spacing={8}>
-            <Logo h="40vmin" pointerEvents="none" />
-            <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-            </Text>
-            <Link
-              color="teal.500"
-              href="https://chakra-ui.com"
-              fontSize="2xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Aplikasi Kurs
-            </Link>
-            <Select placeholder="Select option">
-  <option value="option1">Option 1</option>
-  <option value="option2">Option 2</option>
-  <option value="option3">Option 3</option>
-</Select>
-          </VStack>
-        </Grid>
-      </Box>
+      <BrowserRouter>
+        <Flex h="80px" p={5} borderBottom="1px" borderColor="telegram.500">
+          <Box pl="2">
+            <Logo h="40px" pointerEvents="none" />
+          </Box>
+          <Spacer />
+          <Box>
+            <Button colorScheme="telegram" mr="4" variant="outline">
+              Sign Up
+            </Button>
+            <Button colorScheme="telegram" variant="outline">
+              Log in
+            </Button>
+          </Box>
+        </Flex>
+        <Switch>
+          <Route path="/kurs">
+            <Kurs />
+          </Route>
+          <Route path="/login">
+            <LogIn />
+          </Route>
+          <Route path="/register">
+            <Registration />
+          </Route>
+        </Switch>
+      </BrowserRouter>
     </ChakraProvider>
   );
 }
-
-export default App;

@@ -22,7 +22,7 @@ function App() {
           <VStack spacing={8}>
             <Logo h="40vmin" pointerEvents="none" />
             <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
+              Under development, check this route :
             </Text>
             <Link
               color="red.500"

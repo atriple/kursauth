@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ChakraProvider,
   Code,
@@ -16,6 +16,12 @@ import LogIn from './LogIn';
 import { Logo } from './Logo';
 
 export default function App() {
+  const [token, setToken] = useState();
+
+  // if (!token) {
+  //   return <LogIn setToken={setToken} />;
+  // }
+
   return (
     <ChakraProvider theme={theme}>
       <BrowserRouter>
@@ -38,7 +44,7 @@ export default function App() {
             <Kurs />
           </Route>
           <Route path="/login">
-            <LogIn />
+            <LogIn setToken={setToken} />
           </Route>
           <Route path="/register">
             <Registration />

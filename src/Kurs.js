@@ -55,23 +55,26 @@ function Kurs() {
   const [sig, setSig] = useState([]);
 
   useEffect(async () => {
-    await fetch('https://sandbox.bca.co.id/api/oauth/token', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/x-www-form-urlencoded',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization:
-          'Basic ZDc3MzMwMWYtMzU1OC00OWIzLTg5ZWQtMWU2NDc2MmI0ZmQ2OmU1YzRmYjRlLWYyZTAtNGZjMi1iMmNhLWE4MWUwOWYzN2RlMg==',
-      },
-      body: qs.stringify({
-        grant_type: 'client_credentials',
-      }),
-    })
+    const bcaAuthResponse = await fetch(
+      'https://sandbox.bca.co.id/api/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization:
+            'Basic ZDc3MzMwMWYtMzU1OC00OWIzLTg5ZWQtMWU2NDc2MmI0ZmQ2OmU1YzRmYjRlLWYyZTAtNGZjMi1iMmNhLWE4MWUwOWYzN2RlMg==',
+        },
+        body: qs.stringify({
+          grant_type: 'client_credentials',
+        }),
+      }
+    )
       .then(response => response.json())
-      .then(res => res.access_token)
-      .then(json => setToken(json))
       .catch(error => console.error(error));
     // .finally(() => setLoading(false));
+    console.log(bcaAuthResponse);
+    await setToken(bcaAuthResponse.access_token);
 
     await fetch('https://sandbox.bca.co.id/utilities/signature', {
       method: 'POST',
@@ -79,7 +82,7 @@ function Kurs() {
         Accept: '*/*',
         Timestamp: timestamp,
         URI: '/general/rate/forex',
-        AccessToken: token,
+        AccessToken: bcaAuthResponse.access_token,
         APISecret: '3670d40d-9b53-4b2a-a9bd-f50d46a8cbca',
         HTTPMethod: 'GET',
       },

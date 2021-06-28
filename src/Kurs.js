@@ -43,7 +43,6 @@ import {
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { useTable, useSortBy } from 'react-table';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
 
 function Kurs() {
   const [error, setError] = useState(null);
@@ -116,10 +115,10 @@ function Kurs() {
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
     console.log(ratebca.Currencies);
-    setBCA(ratebca);
+    setBCA(ratebca.Currencies);
   }, []);
 
-  // const [ecb, setECB] = useState([]);
+  const [b2, setB2] = useState([]);
 
   // var parseString = require('xml2js').parseString;
   // useEffect(() => {
@@ -143,19 +142,53 @@ function Kurs() {
   // 
   // }, [])
 
-  // const ratebca2 = JSON.parse(bca);
+
+
+
+  useEffect(async () => {
+    // const host = 'api.frankfurter.app';
+    const rateidr = await fetch('https://api.frankfurter.app/latest?from=IDR')
+      .then(resp => resp.json())
+      .catch((error) => console.error(error))
+    // .then((data) => {
+    //   console.log(data);
+    // });
+    console.log(rateidr.rates);
+    setB2(rateidr.rates);
+  }, []);
+  const math = require('mathjs')
+  // const bca2 = JSON.parse(bca);
   const data = React.useMemo(() =>
-    bca.Currencies.map(item => ({
-      currency: item.CurrencyCode,
-      buy: item.RateDetail[0].Buy,
-      sell: item.RateDetail[0].Sell
+    Object.keys(b2).map((key, index) => ({
+      currency: key,
+      buy: math.round(1 / b2[key], 2),
     })), []
   );
+
+  // const data = React.useMemo(() =>
+  //   bca.map(item => ({
+  //     currency: item.CurrencyCode,
+  //     buy: item.RateDetail[0].Buy,
+  //     sell: item.RateDetail[0].Sell,
+  //   })), []
+  // );
+
   // const data = React.useMemo(
   //   () => [
   //     {
   //       currency: 'USD',
   //       buy: '15',
+  //       sell: '15',
+  //     },
+  //   ],
+  //   []
+  // );
+
+  // const data2 = React.useMemo(
+  //   () => [
+  //     {
+  //       currency: 'USD',
+  //       buy: '20',
   //       sell: '15',
   //     },
   //   ],
@@ -171,9 +204,18 @@ function Kurs() {
         Header: 'Buy',
         accessor: 'buy',
       },
+    ],
+    []
+  );
+  const columns2 = React.useMemo(
+    () => [
       {
-        Header: 'Sell',
-        accessor: 'sell',
+        Header: 'Currency',
+        accessor: 'currency',
+      },
+      {
+        Header: 'Buy',
+        accessor: 'buy',
       },
     ],
     []
@@ -195,7 +237,7 @@ function Kurs() {
         >
           {/* <Grid minH="100vh" p={3}> */}
           {/* <GridItem colSpan={1} bg="tomato" /> */}
-          <GridItem colStart={2} colEnd={9}>
+          <GridItem colStart={2} colEnd={7}>
             <VStack spacing={8}>
               <Heading as="h2" size="lg">
                 Nilai Kurs
@@ -254,6 +296,16 @@ function Kurs() {
                   </Tbody>
                 </Table>
               </Box>
+
+            </VStack>
+          </GridItem>
+          <GridItem colStart={7} colEnd={12}>
+            <VStack spacing={8}>
+              {/* <Logo h="40vmin" pointerEvents="none" /> */}
+              <Heading as="h2" size="lg">
+                Nilai Kurs
+              </Heading>
+              <Divider />
               <Box
                 borderWidth="1px"
                 borderRadius="lg"
@@ -261,194 +313,6 @@ function Kurs() {
                 overflow="hidden"
                 p={5}
               >
-                <Table {...getTableProps()}>
-                  <Thead>
-                    {headerGroups.map(headerGroup => (
-                      <Tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                          <Th
-                            {...column.getHeaderProps(
-                              column.getSortByToggleProps()
-                            )}
-                            isNumeric={column.isNumeric}
-                          >
-                            {column.render('Header')}
-                            <chakra.span pl="4">
-                              {column.isSorted ? (
-                                column.isSortedDesc ? (
-                                  <TriangleDownIcon aria-label="sorted descending" />
-                                ) : (
-                                  <TriangleUpIcon aria-label="sorted ascending" />
-                                )
-                              ) : null}
-                            </chakra.span>
-                          </Th>
-                        ))}
-                      </Tr>
-                    ))}
-                  </Thead>
-                  <Tbody {...getTableBodyProps()}>
-                    {rows.map(row => {
-                      prepareRow(row);
-                      return (
-                        <Tr {...row.getRowProps()}>
-                          {row.cells.map(cell => (
-                            <Td
-                              {...cell.getCellProps()}
-                              isNumeric={cell.column.isNumeric}
-                            >
-                              {cell.render('Cell')}
-                            </Td>
-                          ))}
-                        </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
-              </Box>
-            </VStack>
-          </GridItem>
-          <GridItem colStart={9} colEnd={12}>
-            <VStack spacing={8}>
-              {/* <Logo h="40vmin" pointerEvents="none" /> */}
-              <Heading as="h2" size="lg">
-                Rate Calculator
-              </Heading>
-              <Divider />
-              <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
-                <Container p={5}>
-                  <Tabs
-                    isFitted
-                    variant="enclosed"
-                    variant="soft-rounded"
-                    colorScheme="blue"
-                  >
-                    <TabList>
-                      <Tab>Buy</Tab>
-                      <Tab>Sell</Tab>
-                    </TabList>
-                    <TabPanels>
-                      <TabPanel>
-                        <Stack spacing={5}>
-                          <Select variant="flushed" placeholder="e-Rate">
-                            <option value="option1">Bank Note</option>
-                            <option value="option2">TT Counter</option>
-                          </Select>
-                          <Grid
-                            templateRows="repeat(2, 1fr)"
-                            templateColumns="repeat(5, 1fr)"
-                            gap={4}
-                          >
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="IDR">
-                                  <option>USD</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  variant="flushed"
-                                  placeholder="Nominal"
-                                />
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="USD">
-                                  <option value="IDR">IDR</option>
-                                  <option value="SGD">SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  isDisabled
-                                  variant="flushed"
-                                  placeholder="0.00"
-                                />
-                              </FormControl>
-                            </GridItem>
-                          </Grid>
-                          <Stack direction="column">
-                            <Button colorScheme="blue" variant="solid">
-                              Apply
-                            </Button>
-                            <Button colorScheme="blue" variant="ghost">
-                              Reset
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </TabPanel>
-                      <TabPanel>
-                        <Stack spacing={5}>
-                          <Select variant="flushed" placeholder="e-Rate">
-                            <option value="option1">Bank Note</option>
-                            <option value="option2">TT Counter</option>
-                          </Select>
-                          <Grid
-                            templateRows="repeat(2, 1fr)"
-                            templateColumns="repeat(5, 1fr)"
-                            gap={4}
-                          >
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="IDR">
-                                  <option>USD</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  variant="flushed"
-                                  placeholder="Nominal"
-                                />
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="USD">
-                                  <option>IDR</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  isDisabled
-                                  variant="flushed"
-                                  placeholder="0.00"
-                                />
-                              </FormControl>
-                            </GridItem>
-                          </Grid>
-                          <Stack direction="column">
-                            <Button colorScheme="blue" variant="solid">
-                              Apply
-                            </Button>
-                            <Button colorScheme="blue" variant="ghost">
-                              Reset
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </TabPanel>
-                    </TabPanels>
-                  </Tabs>
-                </Container>
               </Box>
             </VStack>
           </GridItem>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import qs from 'querystring'
+import qs from 'querystring';
 import {
   ChakraProvider,
   Divider,
@@ -44,7 +44,7 @@ import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { useTable, useSortBy } from 'react-table';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
 import { Logo } from './Logo';
-import { rate } from "./rate";
+import { rate } from './rate';
 
 function Kurs() {
   const [error, setError] = useState(null);
@@ -54,43 +54,44 @@ function Kurs() {
   const timestamp = currentDate.toISOString();
   const [sig, setSig] = useState([]);
 
-  useEffect(() => {
-    fetch('https://sandbox.bca.co.id/api/oauth/token', {
+  useEffect(async () => {
+    await fetch('https://sandbox.bca.co.id/api/oauth/token', {
       method: 'POST',
       headers: {
         Accept: 'application/x-www-form-urlencoded',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ZDc3MzMwMWYtMzU1OC00OWIzLTg5ZWQtMWU2NDc2MmI0ZmQ2OmU1YzRmYjRlLWYyZTAtNGZjMi1iMmNhLWE4MWUwOWYzN2RlMg=='
+        Authorization:
+          'Basic ZDc3MzMwMWYtMzU1OC00OWIzLTg5ZWQtMWU2NDc2MmI0ZmQ2OmU1YzRmYjRlLWYyZTAtNGZjMi1iMmNhLWE4MWUwOWYzN2RlMg==',
       },
       body: qs.stringify({
-        grant_type: 'client_credentials'
-      })
+        grant_type: 'client_credentials',
+      }),
     })
-      .then((response) => response.json())
+      .then(response => response.json())
       .then(res => res.access_token)
-      .then((json) => setToken(json))
-      .catch((error) => console.error(error))
+      .then(json => setToken(json))
+      .catch(error => console.error(error));
     // .finally(() => setLoading(false));
 
-    fetch('https://sandbox.bca.co.id/utilities/signature', {
+    await fetch('https://sandbox.bca.co.id/utilities/signature', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
-        'Timestamp': timestamp,
-        'URI': '/general/rate/forex',
-        'AccessToken': token,
-        'APISecret': '3670d40d-9b53-4b2a-a9bd-f50d46a8cbca',
-        'HTTPMethod': 'GET'
-      }
+        Accept: '*/*',
+        Timestamp: timestamp,
+        URI: '/general/rate/forex',
+        AccessToken: token,
+        APISecret: '3670d40d-9b53-4b2a-a9bd-f50d46a8cbca',
+        HTTPMethod: 'GET',
+      },
     })
-      .then((response) => response.json())
-      .then(res => console.log(res))
-      .then((json) => setSig(json))
-      .catch((error) => console.error(error))
+      .then(response => response.text())
+      .then(text => {
+        console.log(text);
+        return setSig(text.split('CalculatedHMAC: ')[1].trim());
+      })
+      .catch(error => console.error(error))
       .finally(() => setLoading(false));
-  }, [])
-
-
+  }, []);
 
   // useEffect(() => {
   //   fetch('https://sandbox.bca.co.id/general/rate/forex', {
@@ -115,7 +116,6 @@ function Kurs() {
   //     .catch((error) => console.error(error))
   //     .finally(() => setLoading(false));
   // }, [])
-
 
   // const data = React.useMemo(
   //   () => [
@@ -389,11 +389,11 @@ function Kurs() {
       <div className="card-body">
         <Text fontSize="3xl">Returned Id: {token}</Text>
         <Text fontSize="3xl">Returned sig: {sig}</Text>
-        {rate["Currencies"].map((data, key) => {
+        {rate['Currencies'].map((data, key) => {
           return (
             <div key={key}>
               {data.CurrencyCode +
-                " , " +
+                ' , ' +
                 // {/* {data.RateDetail.map((detail, idx) =>
                 //   <div >
                 //     <div >{detail.Buy}</div>
@@ -402,10 +402,9 @@ function Kurs() {
             </div>
           );
         })}
-
       </div>
     </div>
-  )
+  );
 }
 
 export default Kurs;

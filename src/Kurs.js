@@ -52,6 +52,7 @@ function Kurs() {
   const currentDate = new Date();
   const timestamp = currentDate.toISOString();
   const [sig, setSig] = useState([]);
+  const [bca, setBCA] = useState([]);
 
   useEffect(async () => {
     const bcaAuthResponse = await fetch('https://sandbox.bca.co.id/api/oauth/token', {
@@ -92,70 +93,74 @@ function Kurs() {
       .catch(error => console.error(error))
       .finally(() => setLoading(false));
     console.log(sigBca);
-    setSig(sigBca.split('CalculatedHMAC: ')[1].trim())
+    setSig(sigBca.split('CalculatedHMAC: ')[1].trim());
+
+    const ratebca = await fetch('https://sandbox.bca.co.id/general/rate/forex', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Authorization': 'Bearer ' + bcaAuthResponse.access_token,
+        // 'Content-Type': 'application/json',
+        // 'Origin': '',
+        'X-BCA-Key': '0c7db875-58e3-4472-96e6-eb854f945f1e',
+        'X-BCA-Timestamp': timestamp,
+        'X-BCA-Signature': sigBca.split('CalculatedHMAC: ')[1].trim(),
+      },
+      // body: {
+      //   CurrencyCode: 'USD',
+      //   RateType: 'bn'
+      // }
+    })
+      .then((response) => response.json())
+      // .then(res => console.log(res))
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
+    console.log(ratebca.Currencies);
+    setBCA(ratebca);
   }, []);
 
-  const [ecb, setECB] = useState([]);
+  // const [ecb, setECB] = useState([]);
 
-  var parseString = require('xml2js').parseString;
-  useEffect(() => {
-    fetch('https://cors.bridged.cc/https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
-      .then(response => response.text())
-      .then(text => {
-        // const result = convert.xml2json(text, { compact: true, spaces: 1 });
-        // // console.log(result['gesmes:Envelope']['Cube']['Cube']['Cube'][0]['_attributes']['time']);
-        // console.log(result);
-        parseString(text, { mergeAttrs: true }, function (err, result) {
-          console.log(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube));
-          return setECB(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube, null, 4));
-        });
-
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
+  // var parseString = require('xml2js').parseString;
   // useEffect(() => {
-  //   fetch('https://sandbox.bca.co.id/general/rate/forex', {
-  //     method: 'GET',
-  //     headers: {
-  //       Accept: 'application/json',
-  //       'Authorization':'Bearer '+{token},
-  //       'Content-Type': 'application/json',
-  //       'Origin':'',
-  //       'X-BCA-Key':'',
-  //       'X-BCA-Timestamp':'',
-  //       'X-BCA-Signature':''
-  //     },
-  //     body: {
-  //       CurrencyCode: 'USD',
-  //       RateType: 'bn'
-  //     }
-  //   })
-  //     .then((response) => response.json())
-  //     .then(res => res.ErrorMessage.Indonesian)
-  //     .then((json) => setSig(json))
-  //     .catch((error) => console.error(error))
-  //     .finally(() => setLoading(false));
+  //   fetch('https://cors.bridged.cc/https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
+  //     .then(response => response.text())
+  //     .then(text => {
+  //       // const result = convert.xml2json(text, { compact: true, spaces: 1 });
+  //       // // console.log(result['gesmes:Envelope']['Cube']['Cube']['Cube'][0]['_attributes']['time']);
+  //       // console.log(result);
+  //       parseString(text, { mergeAttrs: true }, function (err, result) {
+  //         console.log(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube));
+  //         return setECB(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube, null, 4));
+  //       });
+
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // }, []);
+
+  // 
   // }, [])
 
-  // const bankecb = JSON.parse(ecb);
-  // const data = React.useMemo(() =>
-  //   bankecb.map(item => ({
-  //     currency: item.currency[0],
-  //     rate: item.rate[0]
-  //   })), []
-  // );
-  const data = React.useMemo(
-    () => [
-      {
-        currency: 'USD',
-        rate: '15',
-      },
-    ],
-    []
+  // const ratebca2 = JSON.parse(bca);
+  const data = React.useMemo(() =>
+    bca.Currencies.map(item => ({
+      currency: item.CurrencyCode,
+      buy: item.RateDetail[0].Buy,
+      sell: item.RateDetail[0].Sell
+    })), []
   );
+  // const data = React.useMemo(
+  //   () => [
+  //     {
+  //       currency: 'USD',
+  //       buy: '15',
+  //       sell: '15',
+  //     },
+  //   ],
+  //   []
+  // );
   const columns = React.useMemo(
     () => [
       {
@@ -163,8 +168,12 @@ function Kurs() {
         accessor: 'currency',
       },
       {
-        Header: 'Rate',
-        accessor: 'rate',
+        Header: 'Buy',
+        accessor: 'buy',
+      },
+      {
+        Header: 'Sell',
+        accessor: 'sell',
       },
     ],
     []
@@ -190,6 +199,7 @@ function Kurs() {
             <VStack spacing={8}>
               <Heading as="h2" size="lg">
                 Nilai Kurs
+
               </Heading>
               <Divider />
               <Box

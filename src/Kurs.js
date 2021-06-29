@@ -134,7 +134,7 @@ function Kurs() {
               </Heading>
               <Divider />
               <Text fontSize="xl">
-                Terakhir diupdate pada {latestUpdateBca}
+                Terakhir diperbarui pada {latestUpdateBca}
               </Text>
               <Box
                 borderWidth="1px"
@@ -155,7 +155,7 @@ function Kurs() {
               </Heading>
               <Divider />
               <Text fontSize="xl">
-                Terakhir diupdate pada {latestUpdateEcb}
+                Terakhir diperbarui pada {latestUpdateEcb}
               </Text>
               <Box
                 borderWidth="1px"

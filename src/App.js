@@ -46,6 +46,7 @@ export default function App() {
     e.preventDefault();
     localStorage.removeItem('auth');
     setToken(false);
+    setRegisterEmail(null);
   };
 
   const navigationLoggedOut = (

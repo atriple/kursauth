@@ -7,6 +7,7 @@ export default function OAuth({ setToken }) {
 
   useEffect(async () => {
     const accessToken = window.location.hash.split('#access_token=')[1];
+    localStorage.setItem('auth', accessToken);
     await setToken(accessToken);
     console.log(accessToken);
     history.push('/');

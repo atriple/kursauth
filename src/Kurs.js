@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import qs from 'querystring';
 import {
   ChakraProvider,
   Divider,
@@ -42,44 +43,179 @@ import {
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { useTable, useSortBy } from 'react-table';
 import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
 
 function Kurs() {
-  const data = React.useMemo(
+  const [error, setError] = useState(null);
+  const [isLoading, setLoading] = useState(true);
+  const [token, setToken] = useState('');
+  const currentDate = new Date();
+  const timestamp = currentDate.toISOString();
+  const [sig, setSig] = useState([]);
+  const [bca, setBCA] = useState([]);
+
+  useEffect(async () => {
+    const bcaAuthResponse = await fetch('https://sandbox.bca.co.id/api/oauth/token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization:
+          'Basic ZDc3MzMwMWYtMzU1OC00OWIzLTg5ZWQtMWU2NDc2MmI0ZmQ2OmU1YzRmYjRlLWYyZTAtNGZjMi1iMmNhLWE4MWUwOWYzN2RlMg==',
+      },
+      body: qs.stringify({
+        grant_type: 'client_credentials',
+      }),
+    }
+    )
+      .then(response => response.json())
+      .catch(error => console.error(error));
+    // .finally(() => setLoading(false));
+    console.log(bcaAuthResponse);
+    setToken(bcaAuthResponse.access_token);
+
+    const sigBca = await fetch('https://sandbox.bca.co.id/utilities/signature', {
+      method: 'POST',
+      headers: {
+        Accept: '*/*',
+        Timestamp: timestamp,
+        URI: '/general/rate/forex',
+        AccessToken: bcaAuthResponse.access_token,
+        APISecret: '3670d40d-9b53-4b2a-a9bd-f50d46a8cbca',
+        HTTPMethod: 'GET',
+      },
+    })
+      .then(response => response.text())
+      // .then(text => {
+      //   console.log(text);
+      //   return setSig(text.split('CalculatedHMAC: ')[1].trim());
+      // })
+      .catch(error => console.error(error))
+      .finally(() => setLoading(false));
+    console.log(sigBca);
+    setSig(sigBca.split('CalculatedHMAC: ')[1].trim());
+
+    const ratebca = await fetch('https://sandbox.bca.co.id/general/rate/forex', {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Authorization': 'Bearer ' + bcaAuthResponse.access_token,
+        // 'Content-Type': 'application/json',
+        // 'Origin': '',
+        'X-BCA-Key': '0c7db875-58e3-4472-96e6-eb854f945f1e',
+        'X-BCA-Timestamp': timestamp,
+        'X-BCA-Signature': sigBca.split('CalculatedHMAC: ')[1].trim(),
+      },
+      // body: {
+      //   CurrencyCode: 'USD',
+      //   RateType: 'bn'
+      // }
+    })
+      .then((response) => response.json())
+      // .then(res => console.log(res))
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
+    console.log(ratebca.Currencies);
+    setBCA(ratebca.Currencies);
+  }, []);
+
+  const [b2, setB2] = useState([]);
+
+  // var parseString = require('xml2js').parseString;
+  // useEffect(() => {
+  //   fetch('https://cors.bridged.cc/https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
+  //     .then(response => response.text())
+  //     .then(text => {
+  //       // const result = convert.xml2json(text, { compact: true, spaces: 1 });
+  //       // // console.log(result['gesmes:Envelope']['Cube']['Cube']['Cube'][0]['_attributes']['time']);
+  //       // console.log(result);
+  //       parseString(text, { mergeAttrs: true }, function (err, result) {
+  //         console.log(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube));
+  //         return setECB(JSON.stringify(result['gesmes:Envelope'].Cube[0].Cube[0].Cube, null, 4));
+  //       });
+
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // }, []);
+
+  // 
+  // }, [])
+
+
+
+
+  useEffect(async () => {
+    // const host = 'api.frankfurter.app';
+    const rateidr = await fetch('https://api.frankfurter.app/latest?from=IDR')
+      .then(resp => resp.json())
+      .catch((error) => console.error(error))
+    // .then((data) => {
+    //   console.log(data);
+    // });
+    console.log(rateidr.rates);
+    setB2(rateidr.rates);
+  }, []);
+  const math = require('mathjs')
+  // const bca2 = JSON.parse(bca);
+  const data = React.useMemo(() =>
+    Object.keys(b2).map((key, index) => ({
+      currency: key,
+      buy: math.round(1 / b2[key], 2),
+    })), []
+  );
+
+  // const data = React.useMemo(() =>
+  //   bca.map(item => ({
+  //     currency: item.CurrencyCode,
+  //     buy: item.RateDetail[0].Buy,
+  //     sell: item.RateDetail[0].Sell,
+  //   })), []
+  // );
+
+  // const data = React.useMemo(
+  //   () => [
+  //     {
+  //       currency: 'USD',
+  //       buy: '15',
+  //       sell: '15',
+  //     },
+  //   ],
+  //   []
+  // );
+
+  // const data2 = React.useMemo(
+  //   () => [
+  //     {
+  //       currency: 'USD',
+  //       buy: '20',
+  //       sell: '15',
+  //     },
+  //   ],
+  //   []
+  // );
+  const columns = React.useMemo(
     () => [
       {
-        fromUnit: 'inches',
-        toUnit: 'millimetres (mm)',
-        factor: 25.4,
+        Header: 'Currency',
+        accessor: 'currency',
       },
       {
-        fromUnit: 'feet',
-        toUnit: 'centimetres (cm)',
-        factor: 30.48,
-      },
-      {
-        fromUnit: 'yards',
-        toUnit: 'metres (m)',
-        factor: 0.91444,
+        Header: 'Buy',
+        accessor: 'buy',
       },
     ],
     []
   );
-
-  const columns = React.useMemo(
+  const columns2 = React.useMemo(
     () => [
       {
-        Header: 'To convert',
-        accessor: 'fromUnit',
+        Header: 'Currency',
+        accessor: 'currency',
       },
       {
-        Header: 'Into',
-        accessor: 'toUnit',
-      },
-      {
-        Header: 'Multiply by',
-        accessor: 'factor',
-        isNumeric: true,
+        Header: 'Buy',
+        accessor: 'buy',
       },
     ],
     []
@@ -91,6 +227,7 @@ function Kurs() {
   return (
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
+
         <Grid
           minH="100vh"
           p={5}
@@ -100,10 +237,11 @@ function Kurs() {
         >
           {/* <Grid minH="100vh" p={3}> */}
           {/* <GridItem colSpan={1} bg="tomato" /> */}
-          <GridItem colStart={2} colEnd={9}>
+          <GridItem colStart={2} colEnd={7}>
             <VStack spacing={8}>
               <Heading as="h2" size="lg">
                 Nilai Kurs
+
               </Heading>
               <Divider />
               <Box
@@ -158,149 +296,23 @@ function Kurs() {
                   </Tbody>
                 </Table>
               </Box>
+
             </VStack>
           </GridItem>
-          <GridItem colStart={9} colEnd={12}>
+          <GridItem colStart={7} colEnd={12}>
             <VStack spacing={8}>
               {/* <Logo h="40vmin" pointerEvents="none" /> */}
               <Heading as="h2" size="lg">
-                Rate Calculator
+                Nilai Kurs
               </Heading>
               <Divider />
-              <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
-                <Container p={5}>
-                  <Tabs
-                    isFitted
-                    variant="enclosed"
-                    variant="soft-rounded"
-                    colorScheme="blue"
-                  >
-                    <TabList>
-                      <Tab>Buy</Tab>
-                      <Tab>Sell</Tab>
-                    </TabList>
-                    <TabPanels>
-                      <TabPanel>
-                        <Stack spacing={5}>
-                          <Select variant="flushed" placeholder="e-Rate">
-                            <option value="option1">Bank Note</option>
-                            <option value="option2">TT Counter</option>
-                          </Select>
-                          <Grid
-                            templateRows="repeat(2, 1fr)"
-                            templateColumns="repeat(5, 1fr)"
-                            gap={4}
-                          >
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="IDR">
-                                  <option>USD</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  variant="flushed"
-                                  placeholder="Nominal"
-                                />
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="USD">
-                                  <option value="IDR">IDR</option>
-                                  <option value="SGD">SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  isDisabled
-                                  variant="flushed"
-                                  placeholder="0.00"
-                                />
-                              </FormControl>
-                            </GridItem>
-                          </Grid>
-                          <Stack direction="column">
-                            <Button colorScheme="blue" variant="solid">
-                              Apply
-                            </Button>
-                            <Button colorScheme="blue" variant="ghost">
-                              Reset
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </TabPanel>
-                      <TabPanel>
-                        <Stack spacing={5}>
-                          <Select variant="flushed" placeholder="e-Rate">
-                            <option value="option1">Bank Note</option>
-                            <option value="option2">TT Counter</option>
-                          </Select>
-                          <Grid
-                            templateRows="repeat(2, 1fr)"
-                            templateColumns="repeat(5, 1fr)"
-                            gap={4}
-                          >
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="IDR">
-                                  <option>USD</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  variant="flushed"
-                                  placeholder="Nominal"
-                                />
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={2}>
-                              <FormControl id="curr">
-                                <FormLabel>Currency</FormLabel>
-                                <Select variant="flushed" placeholder="USD">
-                                  <option>IDR</option>
-                                  <option>SGD</option>
-                                </Select>
-                              </FormControl>
-                            </GridItem>
-                            <GridItem colSpan={3}>
-                              <FormControl id="nominal">
-                                <FormLabel>Amount</FormLabel>
-                                <Input
-                                  isDisabled
-                                  variant="flushed"
-                                  placeholder="0.00"
-                                />
-                              </FormControl>
-                            </GridItem>
-                          </Grid>
-                          <Stack direction="column">
-                            <Button colorScheme="blue" variant="solid">
-                              Apply
-                            </Button>
-                            <Button colorScheme="blue" variant="ghost">
-                              Reset
-                            </Button>
-                          </Stack>
-                        </Stack>
-                      </TabPanel>
-                    </TabPanels>
-                  </Tabs>
-                </Container>
+              <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                w="100%"
+                overflow="hidden"
+                p={5}
+              >
               </Box>
             </VStack>
           </GridItem>
@@ -308,6 +320,7 @@ function Kurs() {
       </Box>
     </ChakraProvider>
   );
+
 }
 
 export default Kurs;

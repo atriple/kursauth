@@ -1,5 +1,5 @@
 import { useState } from 'react';
-// import GoogleButton from "react-google-button";
+import GoogleButton from 'react-google-button';
 import {
   Flex,
   Heading,
@@ -16,9 +16,12 @@ import {
   FormHelperText,
   InputRightElement,
   Text,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
 import { FaUserAlt, FaLock } from 'react-icons/fa';
 import feathersClient, { rest, authentication } from '@feathersjs/client';
+import { Link as ReactRouterLink } from 'react-router-dom';
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaLock = chakra(FaLock);
@@ -28,17 +31,27 @@ async function loginUser(email, password) {
   const restClient = rest('http://localhost:3030');
   app.configure(restClient.fetch(window.fetch));
   app.configure(authentication({ storageKey: 'auth' }));
-  app
+  return app
     .authenticate({ strategy: 'local', email, password })
-    .then(data => console.log(data))
     .catch(err => console.error(err));
 }
 
-export default function LogIn({ setToken }) {
+export default function LogIn({ setToken, registrationEmail }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState();
+  const [username, setUsername] = useState(
+    registrationEmail ? registrationEmail : ''
+  );
   const [password, setPassword] = useState();
   const [error, setError] = useState('');
+  let registrationSuccess;
+  if (registrationEmail) {
+    registrationSuccess = (
+      <Alert status="success">
+        <AlertIcon />
+        Registrasi berhasil, silahkan log in.
+      </Alert>
+    );
+  }
 
   const handleShowClick = () => setShowPassword(!showPassword);
   const handleSubmit = async e => {
@@ -48,7 +61,10 @@ export default function LogIn({ setToken }) {
       setError('Masukkan username/password!');
       return;
     }
-    await loginUser(username, password);
+    const response = await loginUser(username, password);
+    console.log(response);
+    registrationEmail = null;
+    setToken(response.accessToken);
   };
 
   return (
@@ -66,10 +82,11 @@ export default function LogIn({ setToken }) {
         justifyContent="center"
         alignItems="center"
       >
-        <Heading color="facebook.400">Aplikasi Kurs</Heading>
+        {registrationSuccess}
+        <Heading color="teal">Aplikasi Kurs</Heading>
         <Box minW={{ base: '90%', md: '468px' }}>
           <Text fontSize="xl" color="teal" fontWeight="bold">
-            Login
+            Sign In
           </Text>
           <form onSubmit={handleSubmit}>
             <Stack
@@ -91,6 +108,7 @@ export default function LogIn({ setToken }) {
                     type="email"
                     placeholder="name@example.com"
                     textColor="black"
+                    value={username}
                     onChange={e => setUsername(e.target.value)}
                   />
                 </InputGroup>
@@ -129,6 +147,7 @@ export default function LogIn({ setToken }) {
                 type="submit"
                 variant="solid"
                 width="full"
+                colorScheme="teal"
               >
                 Login
               </Button>
@@ -137,16 +156,16 @@ export default function LogIn({ setToken }) {
         </Box>
       </Stack>
       <Box color="black">
-        Don't have an account?{' '}
-        <Link color="teal.500" href="#">
+        Tidak punya akun?{' '}
+        <Link as={ReactRouterLink} color="teal.500" to="/register">
           Sign Up
         </Link>
       </Box>
-      {/* <GoogleButton
-        onClick={() => {
-          console.log('Google button clicked');
-        }}
-      /> */}
+      <Box>
+        <a href="http://localhost:3030/oauth/google">
+          <GoogleButton />
+        </a>
+      </Box>
     </Flex>
   );
 }

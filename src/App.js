@@ -28,6 +28,7 @@ export default function App() {
 
   useEffect(async () => {
     document.title = 'Aplikasi Kurs';
+    setToken(localStorage.getItem('auth'));
   }, []);
 
   useEffect(async () => {

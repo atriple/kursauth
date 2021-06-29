@@ -1,58 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import qs from 'querystring';
-import {
-  ChakraProvider,
-  Divider,
-  Heading,
-  Input,
-  Box,
-  Text,
-  Select,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Link,
-  Flex,
-  VStack,
-  FormControl,
-  SimpleGrid,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
-  Code,
-  Stack,
-  Grid,
-  GridItem,
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  Spacer,
-  theme,
-  Button,
-  ButtonGroup,
-  Container,
-  chakra,
-} from '@chakra-ui/react';
+import React from 'react';
+import { Table, Thead, Tbody, Tr, Th, Td, chakra } from '@chakra-ui/react';
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { useTable, useSortBy } from 'react-table';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
 
 export default function KursBca({ response }) {
-  //   const [error, setError] = useState(null);
-  //   const [isLoading, setLoading] = useState(true);
-  //   const currentDate = new Date();
-  //   const timestamp = currentDate.toISOString();
-  //   const [token, setToken] = useState('');
-  //   const [sig, setSig] = useState([]);
-  //   const [bca, setBCA] = useState([]);
-
   const data = React.useMemo(
     () =>
       response.map(item => ({
@@ -72,10 +23,12 @@ export default function KursBca({ response }) {
       {
         Header: 'Buy',
         accessor: 'buy',
+        isNumeric: true,
       },
       {
         Header: 'Sell',
         accessor: 'sell',
+        isNumeric: true,
       },
     ],
     []

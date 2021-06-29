@@ -13,7 +13,6 @@ import {
   Link,
   FormControl,
   FormLabel,
-  FormHelperText,
   InputRightElement,
   Text,
 } from '@chakra-ui/react';

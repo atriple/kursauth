@@ -57,11 +57,15 @@ export default function LogIn({ setToken, registrationEmail }) {
     e.preventDefault();
     console.log(username, password);
     if (!username || !password) {
-      setError('Masukkan username/password!');
+      setError('Masukkan email/password!');
       return;
     }
     const response = await loginUser(username, password);
     console.log(response);
+    if (response == null) {
+      setError('Email/password salah!');
+      return;
+    }
     registrationEmail = null;
     setToken(response.accessToken);
   };

@@ -15,7 +15,6 @@ import KursBca from './KursBca';
 import KursEcb from './KursEcb';
 
 function Kurs() {
-  const [error, setError] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [token, setToken] = useState('');
   const currentDate = new Date();
@@ -45,7 +44,6 @@ function Kurs() {
       )
         .then(response => response.json())
         .catch(error => console.error(error));
-      // .finally(() => setLoading(false));
       console.log(bcaAuthResponse);
       setToken(bcaAuthResponse.access_token);
 
@@ -64,10 +62,6 @@ function Kurs() {
         }
       )
         .then(response => response.text())
-        // .then(text => {
-        //   console.log(text);
-        //   return setSig(text.split('CalculatedHMAC: ')[1].trim());
-        // })
         .catch(error => console.error(error))
         .finally(() => setLoading(false));
       console.log(sigBca);
@@ -80,20 +74,14 @@ function Kurs() {
           headers: {
             Accept: 'application/json',
             Authorization: 'Bearer ' + bcaAuthResponse.access_token,
-            // 'Content-Type': 'application/json',
-            // 'Origin': '',
             'X-BCA-Key': '0c7db875-58e3-4472-96e6-eb854f945f1e',
             'X-BCA-Timestamp': timestamp,
             'X-BCA-Signature': sigBca.split('CalculatedHMAC: ')[1].trim(),
           },
-          // body: {
-          //   CurrencyCode: 'USD',
-          //   RateType: 'bn'
-          // }
         }
       )
         .then(response => response.json())
-        // .then(res => console.log(res))
+
         .catch(error => console.error(error))
         .finally(() => setLoading(false));
       console.log(ratebca.Currencies);
@@ -125,8 +113,6 @@ function Kurs() {
           gap={4}
           pt={10}
         >
-          {/* <Grid minH="100vh" p={3}> */}
-          {/* <GridItem colSpan={1} bg="tomato" /> */}
           <GridItem colStart={2} colEnd={7}>
             <VStack spacing={8}>
               <Heading as="h2" size="lg">
@@ -149,7 +135,6 @@ function Kurs() {
           </GridItem>
           <GridItem colStart={7} colEnd={12}>
             <VStack spacing={8}>
-              {/* <Logo h="40vmin" pointerEvents="none" /> */}
               <Heading as="h2" size="lg">
                 Nilai Kurs ECB
               </Heading>
